@@ -1,141 +1,133 @@
-<!-- resources/views/members/show.blade.php -->
-
 @extends('layouts.app')
 
 @section('title', $member->first_name . ' ' . $member->last_name)
 
 @section('content')
-<div class="container mx-auto p-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">{{ $member->first_name }} {{ $member->last_name }}</h1>
-        <div>
-            <a href="{{ route('family-members.edit', $member) }}" class="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 mr-2">
-                <i class="fas fa-edit mr-1"></i> Edit
-            </a>
-            <form action="{{ route('family-members.destroy', $member) }}" method="POST" class="inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" onclick="return confirm('Are you sure you want to delete this member?')">
-                    <i class="fas fa-trash mr-1"></i> Delete
-                </button>
-            </form>
-        </div>
+<div class="page-header">
+    <div class="flex items-center gap-4">
+        <a href="{{ route('family-members.index') }}" class="w-10 h-10 rounded-full bg-white border border-border flex items-center justify-center text-muted hover:text-primary transition-colors">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1>{{ $member->first_name }}'s Profile</h1>
     </div>
+    <div class="flex gap-2">
+        <a href="{{ route('family-members.edit', $member) }}" class="btn btn-outline text-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <form action="{{ route('family-members.destroy', $member) }}" method="POST" class="inline">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline text-danger" onclick="return confirm('Delete this member?')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+    </div>
+</div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="md:flex">
-            <div class="md:w-1/3 p-6 text-center border-b md:border-b-0 md:border-r">
-                <div class="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Profile Card -->
+    <div class="lg:col-span-1">
+        <div class="card">
+            <div class="card-body text-center py-8">
+                <div class="w-32 h-32 mx-auto rounded-full p-1 bg-gradient-to-tr from-primary to-primary-light mb-4">
                     <img src="{{ $member->photo_path ? asset('storage/'.$member->photo_path) : 'https://placehold.co/128x128' }}" 
-                        alt="{{ $member->first_name }}" class="w-full h-full object-cover">
+                        alt="{{ $member->first_name }}" class="w-full h-full object-cover rounded-full border-4 border-white">
                 </div>
-                <h2 class="text-xl font-semibold">{{ $member->first_name }} {{ $member->last_name }}</h2>
-                <p class="text-gray-600">{{ ucfirst($member->gender) }}</p>
+                <h2 class="text-xl font-bold">{{ $member->first_name }} {{ $member->last_name }}</h2>
+                <div class="mt-2">
+                    <span class="badge {{ $member->gender === 'male' ? 'badge-blue' : ($member->gender === 'female' ? 'badge-red' : 'badge-gray') }}">
+                        {{ ucfirst($member->gender) }}
+                    </span>
+                </div>
                 
-                <div class="mt-4 text-left">
-                    <div class="mb-2">
-                        <span class="font-medium">Born:</span> 
-                        {{ $member->birth_date ? $member->birth_date->format('F j, Y') : 'Unknown' }}
+                <div class="mt-8 space-y-4 text-left">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span class="text-xs font-semibold text-muted uppercase">Birth Date</span>
+                        <span class="text-sm font-medium">{{ $member->birth_date ? $member->birth_date->format('M j, Y') : 'Unknown' }}</span>
                     </div>
                     @if($member->death_date)
-                    <div class="mb-2">
-                        <span class="font-medium">Died:</span> 
-                        {{ $member->death_date->format('F j, Y') }}
-                        @if($member->birth_date)
-                            (Age {{ $member->death_date->diffInYears($member->birth_date) }})
-                        @endif
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <span class="text-xs font-semibold text-red-700 uppercase">Death Date</span>
+                        <span class="text-sm font-medium text-red-700">
+                            {{ $member->death_date->format('M j, Y') }}
+                            @if($member->birth_date)
+                                (Age {{ $member->death_date->diffInYears($member->birth_date) }})
+                            @endif
+                        </span>
                     </div>
                     @endif
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="md:w-2/3 p-6">
-                <h3 class="text-lg font-semibold mb-4">Biography</h3>
-                <p class="text-gray-700 mb-6">{{ $member->bio ?? 'No biography available.' }}</p>
+    <!-- Biography & Relations -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Biography</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-gray-700 leading-relaxed">{{ $member->bio ?? 'No biography has been added for this family member yet.' }}</p>
+            </div>
+        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Parents -->
-                    <div>
-                        <h3 class="text-lg font-semibold mb-3">Parents</h3>
-                        @if($member->parents->count() > 0)
-                            <ul class="space-y-2">
-                                @foreach($member->parents as $parent)
-                                <li class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
-                                        <img src="{{ $parent->photo_path ? asset('storage/'.$parent->photo_path) : 'https://placehold.co/40x40' }}" 
-                                            alt="{{ $parent->first_name }}" class="w-full h-full object-cover">
-                                    </div>
-                                    <a href="{{ route('family-members.show', $parent) }}" class="text-indigo-600 hover:underline">
-                                        {{ $parent->first_name }} {{ $parent->last_name }}
-                                    </a>
-                                </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-gray-500">No parents added</p>
-                        @endif
-                    </div>
-
-                    <!-- Spouse -->
-                    <div>
-                        <h3 class="text-lg font-semibold mb-3">Spouse</h3>
-                        @if($member->spouse)
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
-                                    <img src="{{ $member->spouse->photo_path ? asset('storage/'.$member->spouse->photo_path) : 'https://placehold.co/40x40' }}" 
-                                        alt="{{ $member->spouse->first_name }}" class="w-full h-full object-cover">
-                                </div>
-                                <a href="{{ route('family-members.show', $member->spouse) }}" class="text-indigo-600 hover:underline">
-                                    {{ $member->spouse->first_name }} {{ $member->spouse->last_name }}
+        <div class="card">
+            <div class="card-header">
+                <h3>Family Connections</h3>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Parents & Spouse -->
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Parents</h4>
+                            @forelse($member->parents as $parent)
+                                <a href="{{ route('family-members.show', $parent) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                                    <img src="{{ $parent->photo_path ? asset('storage/'.$parent->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
+                                    <span class="text-sm font-medium group-hover:text-primary">{{ $parent->first_name }} {{ $parent->last_name }}</span>
                                 </a>
-                            </div>
-                        @else
-                            <p class="text-gray-500">No spouse added</p>
-                        @endif
+                            @empty
+                                <p class="text-xs text-muted italic">None linked</p>
+                            @endforelse
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Spouses</h4>
+                            @forelse($member->spouses as $spouse)
+                                <a href="{{ route('family-members.show', $spouse) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                                    <img src="{{ $spouse->photo_path ? asset('storage/'.$spouse->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
+                                    <span class="text-sm font-medium group-hover:text-primary">{{ $spouse->first_name }} {{ $spouse->last_name }}</span>
+                                </a>
+                            @empty
+                                <p class="text-xs text-muted italic">None linked</p>
+                            @endforelse
+                        </div>
                     </div>
 
-                    <!-- Children -->
-                    <div>
-                        <h3 class="text-lg font-semibold mb-3">Children</h3>
-                        @if($member->children->count() > 0)
-                            <ul class="space-y-2">
-                                @foreach($member->children as $child)
-                                <li class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
-                                        <img src="{{ $child->photo_path ? asset('storage/'.$child->photo_path) : 'https://placehold.co/40x40' }}" 
-                                            alt="{{ $child->first_name }}" class="w-full h-full object-cover">
-                                    </div>
-                                    <a href="{{ route('family-members.show', $child) }}" class="text-indigo-600 hover:underline">
-                                        {{ $child->first_name }} {{ $child->last_name }}
-                                    </a>
-                                </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-gray-500">No children added</p>
-                        @endif
-                    </div>
-
-                    <!-- Siblings -->
-                    <div>
-                        <h3 class="text-lg font-semibold mb-3">Siblings</h3>
-                        @if($member->siblings->count() > 0)
-                            <ul class="space-y-2">
-                                @foreach($member->siblings as $sibling)
-                                <li class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
-                                        <img src="{{ $sibling->photo_path ? asset('storage/'.$sibling->photo_path) : 'https://placehold.co/40x40' }}" 
-                                            alt="{{ $sibling->first_name }}" class="w-full h-full object-cover">
-                                    </div>
-                                    <a href="{{ route('family-members.show', $sibling) }}" class="text-indigo-600 hover:underline">
-                                        {{ $sibling->first_name }} {{ $sibling->last_name }}
-                                    </a>
-                                </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <p class="text-gray-500">No siblings added</p>
-                        @endif
+                    <!-- Children & Siblings -->
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Children</h4>
+                            @forelse($member->children as $child)
+                                <a href="{{ route('family-members.show', $child) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                                    <img src="{{ $child->photo_path ? asset('storage/'.$child->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
+                                    <span class="text-sm font-medium group-hover:text-primary">{{ $child->first_name }} {{ $child->last_name }}</span>
+                                </a>
+                            @empty
+                                <p class="text-xs text-muted italic">None linked</p>
+                            @endforelse
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Siblings</h4>
+                            @forelse($member->siblings as $sibling)
+                                <a href="{{ route('family-members.show', $sibling) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                                    <img src="{{ $sibling->photo_path ? asset('storage/'.$sibling->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
+                                    <span class="text-sm font-medium group-hover:text-primary">{{ $sibling->first_name }} {{ $sibling->last_name }}</span>
+                                </a>
+                            @empty
+                                <p class="text-xs text-muted italic">None linked</p>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>

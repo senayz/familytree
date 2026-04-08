@@ -1,225 +1,274 @@
-<!-- resources/views/members/edit.blade.php -->
-
 @extends('layouts.app')
 
-@section('title', 'Edit ' . $member->first_name . ' ' . $member->last_name)
+@section('title', 'Edit ' . $member->first_name)
 
 @section('content')
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Edit Family Member</h1>
+<div class="page-header">
+    <div class="flex items-center gap-4">
+        <a href="{{ route('family-members.show', $member) }}" class="w-10 h-10 rounded-full bg-white border border-border flex items-center justify-center text-muted hover:text-primary transition-colors">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1>Update Workspace</h1>
+    </div>
+</div>
 
-    <div class="bg-white rounded-lg shadow p-6">
-        <form action="{{ route('family-members.update', $member) }}" method="POST" enctype="multipart/form-data">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Left Column: Primary Identity -->
+    <div class="lg:col-span-4 space-y-6">
+        <form action="{{ route('family-members.update', $member) }}" method="POST" enctype="multipart/form-data" id="edit-form">
             @csrf
             @method('PUT')
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Personal Information -->
-                <div class="col-span-1">
-                    <h2 class="text-lg font-semibold mb-4">Personal Information</h2>
-                    
-                    <div class="mb-4">
-                        <label for="first_name" class="block text-gray-700 text-sm font-medium mb-2">First Name *</label>
-                        <input type="text" name="first_name" id="first_name" value="{{ old('first_name', $member->first_name) }}" 
-                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        @error('first_name')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="last_name" class="block text-gray-700 text-sm font-medium mb-2">Last Name *</label>
-                        <input type="text" name="last_name" id="last_name" value="{{ old('last_name', $member->last_name) }}" 
-                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        @error('last_name')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="birth_date" class="block text-gray-700 text-sm font-medium mb-2">Birth Date</label>
-                            <input type="date" name="birth_date" id="birth_date" value="{{ old('birth_date', $member->birth_date?->format('Y-m-d')) }}" 
-                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            @error('birth_date')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+            
+            <div class="card overflow-visible">
+                <div class="card-body text-center pt-8 pb-6">
+                    <div class="relative inline-block group">
+                        <div class="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-primary to-primary-light mb-4 shadow-lg overflow-hidden">
+                            <img id="avatar-preview" src="{{ $member->photo_path ? asset('storage/'.$member->photo_path) : 'https://placehold.co/128x128' }}" 
+                                alt="Preview" class="w-full h-full object-cover rounded-full border-4 border-white">
                         </div>
-                        <div>
-                            <label for="death_date" class="block text-gray-700 text-sm font-medium mb-2">Death Date</label>
-                            <input type="date" name="death_date" id="death_date" value="{{ old('death_date', $member->death_date?->format('Y-m-d')) }}" 
-                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            @error('death_date')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <label for="photo" class="absolute bottom-4 right-0 w-10 h-10 bg-white shadow-xl rounded-full flex items-center justify-center text-primary cursor-pointer border border-border hover:bg-gray-50 transition-all active:scale-95">
+                            <i class="fas fa-camera"></i>
+                            <input type="file" name="photo" id="photo" class="hidden" accept="image/*" onchange="previewImage(this)">
+                        </label>
                     </div>
-
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-medium mb-2">Gender *</label>
-                        <div class="flex space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="gender" value="male" class="form-radio text-indigo-600" 
-                                    {{ old('gender', $member->gender) == 'male' ? 'checked' : '' }} required>
-                                <span class="ml-2">Male</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="gender" value="female" class="form-radio text-indigo-600" 
-                                    {{ old('gender', $member->gender) == 'female' ? 'checked' : '' }}>
-                                <span class="ml-2">Female</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="gender" value="other" class="form-radio text-indigo-600" 
-                                    {{ old('gender', $member->gender) == 'other' ? 'checked' : '' }}>
-                                <span class="ml-2">Other</span>
-                            </label>
-                        </div>
-                        @error('gender')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    @if($member->photo_path)
+                    <div class="mt-4">
+                        <label class="inline-flex items-center cursor-pointer text-[10px] font-bold text-red-500 uppercase tracking-tighter hover:text-red-700 transition-colors">
+                            <input type="checkbox" name="remove_photo" class="mr-2"> Remove Current Photo
+                        </label>
                     </div>
-
-                    <div class="mb-4">
-                        <label for="photo" class="block text-gray-700 text-sm font-medium mb-2">Photo</label>
-                        @if($member->photo_path)
-                            <div class="mb-2">
-                                <img src="{{ asset('storage/'.$member->photo_path) }}" alt="{{ $member->first_name }}" class="h-20 w-20 rounded-full object-cover">
-                            </div>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="remove_photo" class="form-checkbox text-red-600">
-                                <span class="ml-2 text-red-600">Remove current photo</span>
-                            </label>
-                        @endif
-                        <input type="file" name="photo" id="photo" accept="image/*" 
-                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-2">
-                        @error('photo')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- Biography -->
-                <div class="col-span-1">
-                    <h2 class="text-lg font-semibold mb-4">Biography</h2>
-                    <div class="mb-4">
-                        <label for="bio" class="block text-gray-700 text-sm font-medium mb-2">Biography</label>
-                        <textarea name="bio" id="bio" rows="8" 
-                            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('bio', $member->bio) }}</textarea>
-                    </div>
+                    @endif
                 </div>
             </div>
 
-            <div class="flex justify-end mt-6">
-                <a href="{{ route('family-members.show', $member) }}" class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-100 mr-3">Cancel</a>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    Update Family Member
-                </button>
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-xs font-bold text-muted uppercase tracking-widest mb-4">Identity</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="gender-btn">
+                            <input type="radio" name="gender" value="male" class="hidden" {{ old('gender', $member->gender) == 'male' ? 'checked' : '' }} required>
+                            <div class="btn-box flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all">
+                                <i class="fas fa-mars text-xl"></i>
+                                <span class="text-xs font-semibold">Male</span>
+                            </div>
+                        </label>
+                        <label class="gender-btn">
+                            <input type="radio" name="gender" value="female" class="hidden" {{ old('gender', $member->gender) == 'female' ? 'checked' : '' }}>
+                            <div class="btn-box flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all">
+                                <i class="fas fa-venus text-xl"></i>
+                                <span class="text-xs font-semibold">Female</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
             </div>
         </form>
+    </div>
 
-        <!-- Relationships Management -->
-        <div class="mt-8 pt-8 border-t">
-            <h2 class="text-xl font-semibold mb-4">Manage Relationships</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Add Relationship -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-3">Add Relationship</h3>
+    <!-- Middle/Right Column: Data & Relations -->
+    <div class="lg:col-span-8 space-y-6">
+        <!-- Personal Record Card -->
+        <div class="card">
+            <div class="card-header border-none pb-0">
+                <h3 class="text-lg font-bold">Personal Record</h3>
+            </div>
+            <div class="card-body space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-user"></i>
+                            <input type="text" name="first_name" form="edit-form" value="{{ old('first_name', $member->first_name) }}" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text" name="last_name" form="edit-form" value="{{ old('last_name', $member->last_name) }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="form-group">
+                        <label>Birth Date</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" name="birth_date" form="edit-form" value="{{ old('birth_date', $member->birth_date?->format('Y-m-d')) }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Death Date</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-dove"></i>
+                            <input type="date" name="death_date" form="edit-form" value="{{ old('death_date', $member->death_date?->format('Y-m-d')) }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Biography History</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-pen-nib !top-4 !translate-y-0"></i>
+                        <textarea name="bio" form="edit-form" rows="5" placeholder="Narrative history...">{{ old('bio', $member->bio) }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relationship Management -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="font-bold text-sm">Add Connection</h4>
+                </div>
+                <div class="card-body">
                     <form action="{{ route('family-relationships.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="member1_id" value="{{ $member->id }}">
                         
-                        <div class="mb-3">
-                            <label for="relationship_type" class="block text-gray-700 text-sm font-medium mb-1">Type</label>
-                            <select name="relationship_type" id="relationship_type" 
-                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                <option value="">Select relationship</option>
-                                <option value="parent">Parent</option>
-                                <option value="child">Child</option>
-                                <option value="spouse">Spouse</option>
-                                <option value="sibling">Sibling</option>
-                            </select>
+                        <div class="space-y-4">
+                            <div class="form-group">
+                                <label class="text-[10px] uppercase font-bold text-muted">Role</label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-link"></i>
+                                    <select name="relationship_type" required>
+                                        <option value="">Select link...</option>
+                                        <option value="parent">Parent</option>
+                                        <option value="child">Child</option>
+                                        <option value="spouse">Spouse</option>
+                                        <option value="sibling">Sibling</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="text-[10px] uppercase font-bold text-muted">Relative</label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-user-friends"></i>
+                                    <select name="member2_id" required>
+                                        <option value="">Select member...</option>
+                                        @foreach($familyMembers as $famMember)
+                                            @if($famMember->id != $member->id)
+                                                <option value="{{ $famMember->id }}">{{ $famMember->first_name }} {{ $famMember->last_name }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-full shadow-lg shadow-primary/20 mt-2">
+                                <i class="fas fa-plus-circle mr-2"></i> Add Link
+                            </button>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="member2_id" class="block text-gray-700 text-sm font-medium mb-1">Family Member</label>
-                            <select name="member2_id" id="member2_id" 
-                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                <option value="">Select member</option>
-                                @foreach($familyMembers as $famMember)
-                                    @if($famMember->id != $member->id)
-                                        <option value="{{ $famMember->id }}">{{ $famMember->first_name }} {{ $famMember->last_name }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
-                            Add Relationship
-                        </button>
                     </form>
                 </div>
-                
-                <!-- Current Relationships -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3">Current Relationships</h3>
-                    @if($member->relationships->count() > 0)
-                        <div class="space-y-2">
-                            @foreach($member->relationships as $relationship)
-                                <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
-                                    <div>
-                                        <span class="font-medium">{{ ucfirst($relationship->relationship_type) }}:</span>
-                                        <span>{{ $relationship->relative->first_name }} {{ $relationship->relative->last_name }}</span>
-                                    </div>
-                                    <form action="{{ route('family-relationships.destroy', $relationship) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm" 
-                                            onclick="return confirm('Are you sure you want to remove this relationship?')">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-gray-500">No relationships defined</p>
-                    @endif
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="font-bold text-sm">Linked Members</h4>
                 </div>
+                <div class="card-body p-0">
+                    <div class="divide-y divide-border">
+                        @forelse($member->relationships as $relationship)
+                            <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary">
+                                        <i class="fas fa-user-link text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold">{{ $relationship->relative->first_name }}</p>
+                                        <p class="text-[10px] text-muted uppercase font-bold">{{ $relationship->relationship_type }}</p>
+                                    </div>
+                                </div>
+                                <form action="{{ route('family-relationships.destroy', $relationship) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:text-red-500 hover:bg-red-50 transition-all" onclick="return confirm('Remove this connection?')">
+                                        <i class="fas fa-trash-alt text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div class="p-8 text-center">
+                                <p class="text-[10px] uppercase font-bold text-muted tracking-widest">No links established</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Footer -->
+        <div class="flex items-center justify-between p-6 bg-white border border-border rounded-xl shadow-sm">
+            <p class="text-xs text-muted">Review changes carefully before committing to the archive.</p>
+            <div class="flex gap-4">
+                <a href="{{ route('family-members.show', $member) }}" class="btn btn-outline bg-white px-8">Discard</a>
+                <button type="submit" form="edit-form" class="btn btn-primary px-10 shadow-lg shadow-primary/20">
+                    <i class="fas fa-save mr-2"></i> Save Changes
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    .form-group label { display: block; font-size: .83rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    
+    .input-wrap { position: relative; }
+    .input-wrap i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .9rem; pointer-events: none; transition: color .2s; }
+    
+    .input-wrap input, .input-wrap select, .input-wrap textarea {
+        width: 100%;
+        padding: 12px 16px 12px 46px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-size: .9rem;
+        font-family: inherit;
+        transition: .2s;
+        background: #fff;
+        color: var(--text);
+    }
+    
+    .input-wrap input:focus, .input-wrap select:focus, .input-wrap textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(79,70,229,.1);
+    }
+    .input-wrap input:focus + i, .input-wrap select:focus + i, .input-wrap textarea:focus + i { color: var(--primary); }
+    
+    .input-wrap select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+
+    /* Gender Toggle Styles */
+    .gender-btn input:checked + .btn-box {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+    .gender-btn .btn-box {
+        background: #fff;
+        border-color: var(--border);
+        color: var(--muted);
+        cursor: pointer;
+    }
+    .gender-btn .btn-box:hover { border-color: var(--primary); }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatar-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+@endpush
 @endsection
-
-
-<!-- Spouse Management Section -->
-<div class="mt-6 border-t pt-6">
-    <h3 class="text-lg font-semibold mb-4">Manage Spouse</h3>
-    
-    @if($member->spouses->count() > 0)
-        <div class="mb-4">
-            <h4 class="font-medium mb-2">Current Spouse(s):</h4>
-            <ul class="space-y-2">
-                @foreach($member->spouses as $spouse)
-                    <li class="flex justify-between items-center bg-gray-50 p-3 rounded">
-                        <span>
-                            <a href="{{ route('family-members.show', $spouse) }}" class="text-blue-600 hover:underline">
-                                {{ $spouse->first_name }} {{ $spouse->last_name }}
-                            </a>
-                        </span>
-                        <form action="{{ route('family-relationships.destroy', ['family_relationship' => $spouse->pivot->id]) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm" 
-                                    onclick="return confirm('End this marriage relationship?')">
-                                <i class="fas fa-unlink mr-1"></i> Divorce
-                            </button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    
