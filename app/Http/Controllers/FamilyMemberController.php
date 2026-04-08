@@ -6,14 +6,14 @@ namespace App\Http\Controllers;
 use App\Models\FamilyMember;
 use App\Models\FamilyRelationship;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FamilyMemberController extends Controller
 {
     public function index()
     {
-       // dd(FamilyMember::all());
         return view('members.index', [
-            'members' => FamilyMember::all()
+            'members' => FamilyMember::latest()->paginate(12)
         ]);
     }
 
@@ -30,7 +30,9 @@ class FamilyMemberController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'birth_date' => 'nullable|date',
+            'birth_place' => 'nullable|string|max:255',
             'death_date' => 'nullable|date|after:birth_date',
+            'death_place' => 'nullable|string|max:255',
             'gender' => 'required|in:male,female,other',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'bio' => 'nullable|string',
@@ -88,7 +90,9 @@ class FamilyMemberController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'birth_date' => 'nullable|date',
+            'birth_place' => 'nullable|string|max:255',
             'death_date' => 'nullable|date|after:birth_date',
+            'death_place' => 'nullable|string|max:255',
             'gender' => 'required|in:male,female,other',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'bio' => 'nullable|string'
@@ -130,6 +134,25 @@ class FamilyMemberController extends Controller
 
         return $map[$type] ?? null;
     }
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $gender = $request->input('gender');
+        
+        $members = FamilyMember::query()
+            ->when($query, function($q) use ($query) {
+                $q->where('first_name', 'like', "%{$query}%")
+                  ->orWhere('last_name', 'like', "%{$query}%");
+            })
+            ->when($gender, function($q) use ($gender) {
+                $q->where('gender', $gender);
+            })
+            ->latest()
+            ->paginate(12);
+
+        return view('members.index', compact('members'));
+    }
+
     public function getMaleFounders()
 {
     $maleFounders = FamilyMember::where('gender', 'male')

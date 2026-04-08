@@ -103,10 +103,27 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label for="birth_place">Birth Location</label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <input type="text" name="birth_place" id="birth_place" value="{{ old('birth_place') }}" placeholder="City, Country">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="form-group">
                                 <label for="death_date">Death Date</label>
                                 <div class="input-wrap">
                                     <i class="fas fa-dove"></i>
                                     <input type="date" name="death_date" id="death_date" value="{{ old('death_date') }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="death_place">Death Location</label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-cross"></i>
+                                    <input type="text" name="death_place" id="death_place" value="{{ old('death_place') }}" placeholder="City, Country">
                                 </div>
                             </div>
                         </div>

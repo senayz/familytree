@@ -82,19 +82,30 @@
                 </div>
                 <div class="card-body">
                     <div class="space-y-4">
-                        @foreach(range(1,4) as $i)
+                        @forelse($recentActivity as $activity)
                         <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs">
-                                <i class="fas fa-user-plus"></i>
+                            <div class="w-8 h-8 rounded-full bg-{{ $activity->color }}-50 flex items-center justify-center text-{{ $activity->color }}-600 text-xs text-center leading-loose">
+                                <i class="fas fa-{{ $activity->icon }}"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium">Member added</p>
-                                <p class="text-muted text-xs">A new ancestor card was created.</p>
-                                <span class="text-muted text-[10px]">{{ $i }} day{{ $i > 1 ? 's' : '' }} ago</span>
+                                <p class="text-sm font-medium">{{ $activity->description }}</p>
+                                <p class="text-muted text-xs">Action by {{ $activity->user->name ?? 'System' }}</p>
+                                <span class="text-muted text-[10px]">{{ $activity->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
-                        @endforeach
+                        @empty
+                        <p class="text-muted text-sm text-center py-4">No recent activity</p>
+                        @endforelse
                     </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Gender Demographics</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="genderChart" height="200"></canvas>
                 </div>
             </div>
 
@@ -122,6 +133,43 @@
             </div>
         </div>
     </div>
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('genderChart').getContext('2d');
+        const data = {
+            labels: ['Male', 'Female', 'Other'],
+            datasets: [{
+                data: [{{ $genderDist['male'] }}, {{ $genderDist['female'] }}, {{ $genderDist['other'] }}],
+                backgroundColor: ['#4F46E5', '#EC4899', '#94A3B8'],
+                hoverOffset: 4,
+                borderWidth: 0
+            }]
+        };
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 12, family: "'Inter', sans-serif" }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    });
+</script>
+@endpush
 @endsection
 
 @push('styles')

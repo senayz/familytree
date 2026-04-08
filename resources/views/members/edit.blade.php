@@ -99,10 +99,27 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Birth Location</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" name="birth_place" form="edit-form" value="{{ old('birth_place', $member->birth_place) }}" placeholder="City, Country">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="form-group">
                         <label>Death Date</label>
                         <div class="input-wrap">
                             <i class="fas fa-dove"></i>
                             <input type="date" name="death_date" form="edit-form" value="{{ old('death_date', $member->death_date?->format('Y-m-d')) }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Death Location</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-cross"></i>
+                            <input type="text" name="death_place" form="edit-form" value="{{ old('death_place', $member->death_place) }}" placeholder="City, Country">
                         </div>
                     </div>
                 </div>

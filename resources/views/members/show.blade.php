@@ -82,7 +82,7 @@
                     <div class="space-y-6">
                         <div>
                             <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Parents</h4>
-                            @forelse($member->parents as $parent)
+                            @forelse($member->all_parents as $parent)
                                 <a href="{{ route('family-members.show', $parent) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
                                     <img src="{{ $parent->photo_path ? asset('storage/'.$parent->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
                                     <span class="text-sm font-medium group-hover:text-primary">{{ $parent->first_name }} {{ $parent->last_name }}</span>
@@ -108,7 +108,7 @@
                     <div class="space-y-6">
                         <div>
                             <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Children</h4>
-                            @forelse($member->children as $child)
+                            @forelse($member->all_children as $child)
                                 <a href="{{ route('family-members.show', $child) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
                                     <img src="{{ $child->photo_path ? asset('storage/'.$child->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
                                     <span class="text-sm font-medium group-hover:text-primary">{{ $child->first_name }} {{ $child->last_name }}</span>
@@ -119,7 +119,7 @@
                         </div>
                         <div>
                             <h4 class="text-xs font-bold text-muted uppercase tracking-tighter mb-3">Siblings</h4>
-                            @forelse($member->siblings as $sibling)
+                            @forelse($member->all_siblings as $sibling)
                                 <a href="{{ route('family-members.show', $sibling) }}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
                                     <img src="{{ $sibling->photo_path ? asset('storage/'.$sibling->photo_path) : 'https://placehold.co/40x40' }}" class="w-8 h-8 rounded-full object-cover">
                                     <span class="text-sm font-medium group-hover:text-primary">{{ $sibling->first_name }} {{ $sibling->last_name }}</span>

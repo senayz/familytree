@@ -3,65 +3,77 @@
     width: 100%;
     position: relative;
     text-align: center;
+    padding: 20px 0;
 }
 
 /* Card Styling */
 .tree li a {
     display: inline-block;
     text-decoration: none;
-    color: var(--text-color);
-    background: var(--card-bg);
-    border: 1px solid var(--connector-color);
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 0.5rem;
-    width: 200px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin: 10px;
+    width: 180px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,.05);
+    position: relative;
+    z-index: 10;
 }
 
+/* Gender-specific border accents */
+.tree li a.male { border-bottom: 4px solid var(--primary); }
+.tree li a.female { border-bottom: 4px solid #EC4899; }
+
 .tree li a:hover {
-    background: var(--card-hover);
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    border-color: var(--border-color);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: var(--primary);
+    z-index: 20;
 }
 
 /* Image Styling */
 .tree img {
     display: block;
     margin: 0 auto 0.75rem;
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid var(--border-color);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 1.5px var(--border);
     transition: all 0.3s ease;
 }
 
 .tree li a:hover img {
-    border-color: var(--text-color);
-    transform: scale(1.05);
+    box-shadow: 0 0 0 2px var(--primary);
 }
 
 /* Name Styling */
 .tree .member-name {
+    display: block;
     font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
+    font-size: .95rem;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.2;
 }
 
 /* Date Styling */
 .tree time {
-    display: block;
-    font-size: 0.9rem;
-    color: #aaa;
-    font-style: italic;
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 50px;
 }
 
-/* Tree Connectors */
+/* Tree Connectors - Modernized */
 .tree, .tree ul {
-    padding-top: 20px;
+    padding-top: 30px;
     position: relative;
     transition: all 0.5s;
 }
@@ -71,7 +83,7 @@
     text-align: center;
     list-style-type: none;
     position: relative;
-    padding: 20px 10px 0 10px;
+    padding: 30px 10px 0 10px;
     vertical-align: top;
     transition: all 0.5s;
 }
@@ -81,15 +93,15 @@
     position: absolute;
     top: 0;
     right: 50%;
-    border-top: 2px solid var(--connector-color);
+    border-top: 1.5px solid var(--border);
     width: 50%;
-    height: 20px;
+    height: 30px;
 }
 
 .tree li::after {
     right: auto;
     left: 50%;
-    border-left: 2px solid var(--connector-color);
+    border-left: 1.5px solid var(--border);
 }
 
 .tree li:only-child::after,
@@ -107,12 +119,12 @@
 }
 
 .tree li:last-child::before {
-    border-right: 2px solid var(--connector-color);
-    border-radius: 0 5px 0 0;
+    border-right: 1.5px solid var(--border);
+    border-radius: 0 12px 0 0;
 }
 
 .tree li:first-child::after {
-    border-radius: 5px 0 0 0;
+    border-radius: 12px 0 0 0;
 }
 
 .tree ul::before {
@@ -120,9 +132,9 @@
     position: absolute;
     top: 0;
     left: 50%;
-    border-left: 2px solid var(--connector-color);
+    border-left: 1.5px solid var(--border);
     width: 0;
-    height: 20px;
+    height: 30px;
 }
 
 /* Hover effects on connectors */
@@ -130,27 +142,15 @@
 .tree li a:hover + ul li::before,
 .tree li a:hover + ul::before,
 .tree li a:hover + ul ul::before {
-    border-color: var(--border-color);
+    border-color: var(--primary);
 }
 
 /* Responsive Design */
-@media (max-width: 992px) {
-    .tree li a {
-        width: 180px;
-        padding: 0.75rem;
-    }
-    
-    .tree img {
-        width: 80px;
-        height: 80px;
-    }
-}
-
 @media (max-width: 768px) {
     .tree li {
         display: block;
         text-align: left;
-        padding: 10px 0 0 0;
+        padding: 10px 0 0 20px;
     }
     
     .tree li a {
@@ -158,41 +158,24 @@
         display: flex;
         align-items: center;
         text-align: left;
-        padding: 0.75rem;
+        padding: 12px;
+        margin: 5px 0;
     }
     
     .tree img {
-        width: 60px;
-        height: 60px;
-        margin-right: 1rem;
-        margin-bottom: 0;
+        width: 50px;
+        height: 50px;
+        margin: 0 12px 0 0;
     }
     
-    .tree ul::before,
-    .tree li::before,
-    .tree li::after {
-        display: none;
-    }
+    .tree .member-name { font-size: .85rem; }
+    
+    .tree ul::before, .tree li::before, .tree li::after { display: none; }
     
     .tree ul {
-        padding-left: 2rem;
-        padding-top: 0.5rem;
+        padding-left: 20px;
+        padding-top: 5px;
+        border-left: 1.5px dashed var(--border);
+        margin-left: 25px;
     }
 }
-
-@media (max-width: 576px) {
-    .tree li a {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .tree img {
-        margin-right: 0;
-        margin-bottom: 0.5rem;
-    }
-    
-    .tree ul {
-        padding-left: 1rem;
-    }
-}
-

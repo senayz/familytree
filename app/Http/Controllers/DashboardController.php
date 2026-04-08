@@ -23,18 +23,44 @@ class DashboardController extends Controller
             ->orderBy('date')
             ->take(5)
             ->get();
-$locationsCount = 12; // Hardcoded for now
-            $eventsCount =8;// Hardcoded for now
-        $recentActivity = $this->getRecentActivity();
-      $members = FamilyMember::with(['parents', 'children', 'spouses', 'siblings'])->get();
+        
+        $locationsCount = FamilyMember::whereNotNull('birth_place')->distinct('birth_place')->count() 
+                        + FamilyMember::whereNotNull('death_place')->distinct('death_place')->count();
+        $eventsCount = FamilyEvent::count();
+        
+        $recentActivity = \App\Models\ActivityLog::with(['subject', 'user'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $members = FamilyMember::with(['parents', 'children', 'spouses', 'siblings'])->get();
 $memberCount = FamilyMember::count();
- $founders =FamilyMember::where('gender', 'male')->whereDoesntHave('parents')
-                ->with(['children' => function($query) {
-                    $query->with(['children' => function($query) {
-                        $query->with('children'); // Load 3 generations by default
-                    }]);
-                }])
-                ->get();
+        $focusId = request('focus');
+        $depth = request('depth', 3);
+        
+        $query = FamilyMember::query();
+        
+        if ($focusId) {
+            $query->where('id', $focusId);
+        } else {
+            $query->where('gender', 'male')->whereDoesntHave('parents');
+        }
+
+        $founders = $query->with(['children' => function($query) use ($depth) {
+            if ($depth > 1) {
+                $query->with(['children' => function($query) use ($depth) {
+                    if ($depth > 2) {
+                        $query->with('children');
+                    }
+                }]);
+            }
+        }])->get();
+
+        $genderDist = [
+            'male' => FamilyMember::where('gender', 'male')->count(),
+            'female' => FamilyMember::where('gender', 'female')->count(),
+            'other' => FamilyMember::where('gender', 'other')->count(),
+        ];
 
 
 
@@ -49,32 +75,10 @@ $memberCount = FamilyMember::count();
             'locationsCount',
             'eventsCount',
             'founders',
-           
+            'genderDist'
         ));
     }
 
-    protected function getRecentActivity()
-    {
-        // In a real app, you'd have an activity log model
-        // This is simplified for demonstration
-        return [
-            [
-                'type' => 'member_added',
-                'message' => 'New member added to the family tree',
-                'date' => now()->subHours(2),
-                'icon' => 'user-plus',
-                'color' => 'blue'
-            ],
-            [
-                'type' => 'birthday',
-                'message' => 'Upcoming birthday reminder',
-                'date' => now()->subDay(),
-                'icon' => 'birthday-cake',
-                'color' => 'green'
-            ],
-            // Add more activities as needed
-        ];
-    }
     protected function getUpcomingBirthdays()
 {
     return FamilyMember::whereMonth('birth_date', '>=', now()->month)

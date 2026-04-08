@@ -77,4 +77,84 @@ public function siblings()
         ->withTimestamps();
 }
 
+// Accessor to dynamically resolve all siblings (explicit, implicit via parents, and transitive)
+public function getAllSiblingsAttribute()
+{
+    // 1. Explicitly linked siblings
+    $explicit = $this->siblings()->get();
+    
+    // 2. Implicit siblings (those who share parents)
+    $parentIds = $this->parents->pluck('id')->toArray();
+    $implicitViaParents = collect();
+    
+    if (!empty($parentIds)) {
+        // Query the relationships table directly to avoid Eloquent alias/whereHas complexities
+        $siblingIdsViaParents = \Illuminate\Support\Facades\DB::table('family_relationships')
+            ->whereIn('member2_id', $parentIds)
+            ->where('relationship_type', 'parent')
+            ->where('member1_id', '!=', $this->id)
+            ->pluck('member1_id')
+            ->toArray();
+            
+        if (!empty($siblingIdsViaParents)) {
+            $implicitViaParents = self::whereIn('id', $siblingIdsViaParents)->get();
+        }
+    }
+    
+    // 3. Transitive siblings (siblings of my explicit siblings)
+    $siblingIds = $explicit->pluck('id')->toArray();
+    $transitiveSiblings = collect();
+    
+    if (!empty($siblingIds)) {
+        $transitiveSiblingIds = \Illuminate\Support\Facades\DB::table('family_relationships')
+            ->whereIn('member2_id', $siblingIds)
+            ->where('relationship_type', 'sibling')
+            ->where('member1_id', '!=', $this->id)
+            ->pluck('member1_id')
+            ->toArray();
+            
+        if (!empty($transitiveSiblingIds)) {
+            $transitiveSiblings = self::whereIn('id', $transitiveSiblingIds)->get();
+        }
+    }
+    
+    // Merge all, remove current member if accidentally included, and return unique
+    return $explicit->merge($implicitViaParents)->merge($transitiveSiblings)
+        ->where('id', '!=', $this->id)
+        ->unique('id')
+        ->values();
+}
+
+// Accessor to dynamically resolve all parents (including spouses of explicitly linked parents)
+public function getAllParentsAttribute()
+{
+    $explicitParents = $this->parents()->get();
+    
+    $parentSpouses = collect();
+    foreach ($explicitParents as $parent) {
+        $parentSpouses = $parentSpouses->merge($parent->spouses);
+    }
+    
+    return $explicitParents->merge($parentSpouses)
+        ->where('id', '!=', $this->id)
+        ->unique('id')
+        ->values();
+}
+
+// Accessor to dynamically resolve all children (including children of spouses)
+public function getAllChildrenAttribute()
+{
+    $explicitChildren = $this->children()->get();
+    
+    $spouseChildren = collect();
+    foreach ($this->spouses()->get() as $spouse) {
+        $spouseChildren = $spouseChildren->merge($spouse->children);
+    }
+    
+    return $explicitChildren->merge($spouseChildren)
+        ->where('id', '!=', $this->id)
+        ->unique('id')
+        ->values();
+}
+
 }
